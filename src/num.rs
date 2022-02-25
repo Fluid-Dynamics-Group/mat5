@@ -27,14 +27,14 @@ macro_rules! impl_num {
 
 // impl the matlab datatype extensions for the following types
 impl_num! {
-    i8,  1, 8, 1,
-    u8,  2, 9, 1,
-    i16, 3, 10, 2,
-    u16, 4, 11, 2,
-    i32, 5, 12, 4,
-    u32, 6, 13, 4,
-    f32, 7, 6, 4,
-    f64, 9, 7, 8,
+    i8,  1,  8,  1,
+    u8,  2,  9,  1,
+    i16, 3,  10, 2,
+    u16, 4,  11, 2,
+    i32, 5,  12, 4,
+    u32, 6,  13, 4,
+    f32, 7,  7,  4,
+    f64, 9,  6,  8,
     i64, 12, 14, 8,
     u64, 13, 15, 8
 }

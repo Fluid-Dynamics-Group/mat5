@@ -10,7 +10,7 @@ impl<T, const BYTES: usize> Container<T> for Vec<T>
 where
     T: Num<LeBytes = [u8; BYTES]>,
 {
-    fn write<W: Write>(
+    fn write_container<W: Write>(
         &self,
         mut writer: W,
         _container_name: Option<&'static str>,
@@ -37,18 +37,18 @@ where
 }
 
 // allow references to owned arrays to use the container writing format
-impl<T, DIM, const BYTES: usize> Container<T> for &ndarray::Array<T, DIM>
+impl<T, DIM, const BYTES: usize> Container<T> for ndarray::Array<T, DIM>
 where
     T: Num<LeBytes = [u8; BYTES]>,
     DIM: ndarray::Dimension,
     for<'a> ndarray::ArrayView<'a, T, DIM>: WriteMatrix,
 {
-    fn write<W: Write>(
+    fn write_container<W: Write>(
         &self,
         writer: W,
         container_name: Option<&'static str>,
     ) -> Result<(), Error> {
-        self.view().write(writer, container_name)?;
+        self.view().write_container(writer, container_name)?;
         Ok(())
     }
 }
@@ -59,7 +59,7 @@ where
     DIM: ndarray::Dimension,
     Self: WriteMatrix,
 {
-    fn write<W: Write>(
+    fn write_container<W: Write>(
         &self,
         mut writer: W,
         container_name: Option<&'static str>,
@@ -73,9 +73,10 @@ where
         // write the matarix header
         //
         writer.write_all(&MATRIX_MATLAB_ID.to_le_bytes())?;
-        // TODO
         let total_matrix_length: usize = self.byte_count(container_name, self.ndim());
         writer.write_all(&total_matrix_length.to_le_bytes())?;
+
+        println!("finish matrix header");
 
         //
         // array flags
@@ -88,15 +89,22 @@ where
         let flags: u64 = 0u64 + (0x00000000 << (5 * 8)) + (matrix_class << (4 * 8));
         writer.write_all(&flags.to_le_bytes())?;
 
+        println!("{:b}", flags);
+        dbg!(matrix_class);
+
         //
         // array dimensions
         //
         write_matrix_dimensions(&mut writer, self.shape())?;
 
+        println!("finish matrix dimensions");
+
         //
         // Array name
         //
         write_array_name(&mut writer, container_name)?;
+
+        println!("finish array name");
 
         //
         // Array data (assume non-complex data)
@@ -111,4 +119,30 @@ where
 
         Ok(())
     }
+}
+
+#[test]
+fn container_serialization_arr2() {
+    let mut array = ndarray::Array2::<u64>::zeros((2, 2));
+    array[[0, 0]] = 1;
+    array[[0, 1]] = 2;
+    array[[1, 0]] = 3;
+    array[[1, 1]] = 4;
+
+    println!("{}", array);
+
+    // comes from figure 1-7
+    // 128 bytes of matrix content + the first 8 bytes for the header
+    //
+    // since we are not writing complex data, skip the last 5 rows (8 bytes each)
+    let expected_len = 128 + 8 - (5 * 8);
+
+    let mut buffer = Vec::new();
+
+    array
+        .view()
+        .write_container(&mut buffer, Some("my_array"))
+        .unwrap();
+
+    assert_eq!(expected_len, buffer.len());
 }

@@ -5,6 +5,9 @@ mod prelude;
 mod utils;
 mod write_matrix;
 
+pub use utils::fill_byte_padding;
+pub use utils::write_default_header;
+
 use prelude::*;
 
 #[derive(Debug, thiserror::Error)]
@@ -15,10 +18,18 @@ pub enum Error {
     MissingContainerName,
 }
 
+/// handles how to write the individual fields
+pub trait MatFile {
+    fn write_contents<W: Write>(&self, writer: W) -> Result<(), Error>;
+}
+
 /// handles writing container types to files, including vectors and matricies
 pub trait Container<T> {
-    fn write<W: Write>(&self, writer: W, container_name: Option<&'static str>)
-        -> Result<(), Error>;
+    fn write_container<W: Write>(
+        &self,
+        writer: W,
+        container_name: Option<&'static str>,
+    ) -> Result<(), Error>;
 }
 
 /// Describes numeric types and thier associated matlab

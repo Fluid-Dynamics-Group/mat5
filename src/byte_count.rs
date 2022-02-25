@@ -25,7 +25,7 @@ where
         let bytes_for_array_dimensions = std::mem::size_of::<u32>() * n_dim;
         let padding_bytes = padding_bytes_required(bytes_for_array_dimensions);
         bytes += bytes_for_array_dimensions + padding_bytes;
-        println!("array dimensions # of bytes {}", bytes - _tmp);
+        //println!("array dimensions # of bytes {}", bytes - _tmp);
 
         //
         // Array name
@@ -38,7 +38,7 @@ where
         let array_name_bytes = array_name.bytes().len();
         let padding_bytes_name = padding_bytes_required(array_name_bytes);
         bytes += array_name_bytes + padding_bytes_name;
-        println!("array name # of bytes {}", bytes - _tmp);
+        //println!("array name # of bytes {}", bytes - _tmp);
 
         //
         // Numeric data
@@ -50,7 +50,7 @@ where
         let array_padding = padding_bytes_required(array_bytes);
         bytes += array_bytes + array_padding;
 
-        println!("numeric data # of bytes {}", bytes - _tmp);
+        //println!("numeric data # of bytes {}", bytes - _tmp);
 
         bytes
     }
