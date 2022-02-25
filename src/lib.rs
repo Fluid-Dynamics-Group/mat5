@@ -1,29 +1,28 @@
+mod byte_count;
+mod container;
+mod num;
 mod prelude;
-mod traits;
+mod utils;
+mod write_matrix;
 
 use prelude::*;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
-}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("An io error occured in the operation: `{0}`")]
     Io(#[from] io::Error),
     #[error("A container name was not specified for the matrix / n-dimensional array")]
-    MissingContainerName
+    MissingContainerName,
 }
 
+/// handles writing container types to files, including vectors and matricies
 pub trait Container<T> {
-    fn write<W: Write>(&self, writer: W, container_name: Option<&'static str>) -> Result<(), Error>;
+    fn write<W: Write>(&self, writer: W, container_name: Option<&'static str>)
+        -> Result<(), Error>;
 }
 
+/// Describes numeric types and thier associated matlab
+/// identifier constants that can be written to files
 pub trait Num {
     type LeBytes;
 
@@ -34,8 +33,15 @@ pub trait Num {
     fn le_bytes(&self) -> Self::LeBytes;
 }
 
+/// counds the number of bytes that are required for a matrix
+/// uses when writing it to a file
 trait ByteCount {
-    fn byte_count(&self, array_name: &'static str) -> usize;
+    fn byte_count(&self, array_name: &'static str, n_dim: usize) -> usize;
+}
+
+/// describes the order in which a N dimensional matrix's values should be written to the file
+pub trait WriteMatrix {
+    fn write_matrix<W: Write>(&self, writer: W) -> Result<(), io::Error>;
 }
 
 // verify that our trait system works
