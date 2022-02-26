@@ -4,9 +4,11 @@ mod num;
 mod prelude;
 mod utils;
 mod write_matrix;
+mod parse;
 
 pub use utils::fill_byte_padding;
 pub use utils::write_default_header;
+pub use parse::parse_file;
 
 use prelude::*;
 

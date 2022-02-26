@@ -19,11 +19,13 @@ where
         let len = self.len();
 
         let matlab_id = T::matlab_id();
-        writer.write_all(&matlab_id.to_le_bytes())?;
+        writer.write_all(&matlab_id.le_bytes())?;
+
+        dbg!(std::mem::size_of_val(&matlab_id) + std::mem::size_of_val(&matlab_id.le_bytes()));
 
         let byte_length = size * len;
         let byte_length_u32 = byte_length as u32;
-        writer.write_all(&byte_length_u32.to_le_bytes())?;
+        writer.write_all(&byte_length_u32.le_bytes())?;
 
         // then write the data
         self.iter()
@@ -72,24 +74,36 @@ where
         //
         // write the matarix header
         //
-        writer.write_all(&MATRIX_MATLAB_ID.to_le_bytes())?;
+        writer.write_all(&MATRIX_MATLAB_ID.le_bytes())?;
         let total_matrix_length: usize = self.byte_count(container_name, self.ndim());
-        writer.write_all(&total_matrix_length.to_le_bytes())?;
+        dbg!(total_matrix_length);
+        writer.write_all(&(total_matrix_length as u32).le_bytes())?;
 
         println!("finish matrix header");
 
         //
         // array flags
         //
-        writer.write_all(&U32_MATLAB_ID.to_le_bytes())?;
-        writer.write_all(&8u32.to_le_bytes())?;
+        writer.write_all(&i32::matlab_id().le_bytes())?;
+        writer.write_all(&8u32.le_bytes())?;
         // then  the actual flags
         // zeros with the complex / global / logical values set
         let matrix_class = T::matrix_id() as u64;
-        let flags: u64 = 0u64 + (0x00000000 << (5 * 8)) + (matrix_class << (4 * 8));
-        writer.write_all(&flags.to_le_bytes())?;
+        // set the global bit
+        let flag_options : u16 = 0b100000;
+        let flags : u64 = (flag_options as u64) << (2*8);
+        println!("flags with only first shift:\n{:b}", flags);
+        let flags = flags ^ (matrix_class as u64) << (3 * 8);
+        println!("flags with both shift:\n{:b}", flags);
 
-        println!("{:b}", flags);
+        //let flags : u64 = (flag_options as u64) << (5*8);
+        //println!("flags with only first shift:\n{:b}", flags);
+        //let flags = flags ^ (matrix_class as u64) << (4 * 8);
+        //println!("flags with both shift:\n{:b}", flags);
+
+        writer.write_all(&flags.le_bytes())?;
+
+        println!("matrix class: {:b}", matrix_class);
         dbg!(matrix_class);
 
         //

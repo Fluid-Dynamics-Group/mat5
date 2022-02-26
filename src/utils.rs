@@ -35,7 +35,7 @@ pub fn fill_byte_padding<W: Write>(mut writer: W, total_bytes: usize) -> Result<
     let byte_padding_required = padding_bytes_required(total_bytes);
     dbg!(byte_padding_required);
     for _ in 0..byte_padding_required {
-        writer.write_all(&0u8.to_le_bytes())?;
+        writer.write_all(&0u8.le_bytes())?;
     }
 
     Ok(())
@@ -46,14 +46,15 @@ pub fn write_default_header<W: Write>(mut writer: W) -> Result<(), io::Error> {
     write_text_header(&mut writer, "default text header")?;
 
     // subsytem information
-    writer.write_all(&0u64.le_bytes())?;
+    //writer.write_all(&0u64.le_bytes())?;
+    writer.write_all(&[32,32,32,32,32,32,32,32])?;
 
     // flag information
 
-    //let version: u16 = 0x0100;
-    let version: u16 = 0x0001;
+    let version: i16 = 0x0100;
     writer.write_all(&version.le_bytes())?;
-    writer.write_all("MI".as_bytes())?;
+    // for some reason this indicates LE bytes (???)
+    writer.write_all("IM".as_bytes())?;
 
     Ok(())
 }
@@ -65,7 +66,7 @@ pub fn write_text_header<W: Write>(mut writer: W, text: &str) -> Result<(), io::
     let remaining_bytes = 116 - text.as_bytes().len();
 
     for _ in 0..remaining_bytes {
-        writer.write_all(&0u8.le_bytes())?;
+        writer.write_all(&32u8.le_bytes())?;
     }
 
     Ok(())
