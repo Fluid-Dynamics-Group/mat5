@@ -44,6 +44,10 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
     let (rest, dimension_type) = bytes::take(4usize)(rest)?;
     let (rest, dimension_length) = bytes::take(4usize)(rest)?;
 
+    make_array_values!(i32, 4, dimension_type, dimension_type);
+    make_array_values!(i32, 4, dimension_length, dimension_length_);
+
+    let (rest, dimension_sizes) = bytes::take(dimension_length_ as usize)(rest)?;
 
     make_array_values!(u32, 4, data_length_1, data_length_1);
 
@@ -78,13 +82,22 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
 
     //dbg!(arr_flag);
     make_array_values!(u32, 4, arr_flag_1, arr_flag_1);
-    make_array_values!(u32, 4, arr_flag_2, arr_flag_2);
+    make_array_values!(i32, 4, arr_flag_2, arr_flag_2);
     println!("array flags 1: {:032b}", arr_flag_1);
     println!("array flags 2: {:032b}", arr_flag_2);
 
-    make_array_values!(u32, 4, dimension_type, dimension_type);
-    make_array_values!(u32, 4, dimension_length, dimension_length);
-    dbg!(dimension_type, dimension_length);
+    dbg!(dimension_type, dimension_length_);
+    dbg!(dimension_length);
+
+    dbg!(dimension_sizes);
+    let len_1 = &dimension_sizes[0..4];
+    let len_2 = &dimension_sizes[4..8];
+    make_array_values!(i32, 4, len_1, dim_1);
+    make_array_values!(i32, 4, len_2, dim_2);
+
+    dbg!(dim_1, dim_2);
+
+    //make_array_values!(u32, 4, dimension_sizes, dimension_sizes);
 
     //Ok(((), ()));
     Ok((&[], ()))

@@ -7,7 +7,7 @@ pub(crate) fn write_array_name<W: Write>(mut writer: W, array_name: &str) -> Res
     let bytes_u32: u32 = num_bytes as u32;
     writer.write_all(&bytes_u32.le_bytes())?;
 
-    writer.write_all(array_name.as_bytes())?;
+    writer.write_all(&array_name.as_bytes())?;
     dbg!(num_bytes);
     dbg!(array_name.as_bytes());
     println!("padding array name string");
@@ -23,12 +23,17 @@ pub(crate) fn write_matrix_dimensions<W: Write>(
     // first specify that we are writing
     writer.write_all(&i32::matlab_id().le_bytes())?;
 
+    let bytes_written = std::mem::size_of::<i32>() * dimension.len();
+    writer.write_all(&(bytes_written as i32).le_bytes())?;
+
     for dim in dimension {
         let dim = *dim as i32;
+        dbg!(dim);
         writer.write_all(&dim.le_bytes())?;
     }
 
-    let bytes_written = std::mem::size_of::<i32>() * dimension.len();
+    dbg!(bytes_written);
+    println!("padding matrix dimensions");
     fill_byte_padding(writer, bytes_written)?;
 
     Ok(())

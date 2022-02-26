@@ -4,7 +4,7 @@
 /// `$matlab_id`   - u32 value from mat specification that this type is represented by
 /// `$num_bytes`   - how many bytes are contained in the value
 macro_rules! impl_num {
-    ($($target_type:ty,$matlab_id:expr, $matrix_id: expr, $num_bytes:expr),+)=> {
+    ($($target_type:ty, $matlab_id:expr, $matrix_id: expr, $num_bytes:expr),+)=> {
         $(
             impl crate::Num for $target_type {
                 type LeBytes = [u8;$num_bytes];

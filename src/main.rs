@@ -41,6 +41,7 @@ impl MatFile for Foo {
 
         println!("writing container");
         mat5::Container::write_container(&self.inner, &mut writer, Some("my_array"))?;
+        //mat5::Container::write_container(&self.inner, &mut writer, Some("        "))?;
 
         Ok(())
     }
