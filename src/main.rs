@@ -80,9 +80,8 @@ fn main() {
     let mut file = std::fs::File::create("./scripts/test_file.mat").unwrap();
     foo.write_contents(&mut file).unwrap();
 
-
-    let file = std::path::PathBuf::from("./scripts/octave_output.mat");
-    //let file = std::path::PathBuf::from("./scripts/test_file.mat");
+    //let file = std::path::PathBuf::from("./scripts/octave_output.mat");
+    let file = std::path::PathBuf::from("./scripts/test_file.mat");
     mat5::parse_file(&file).ok();
 
     dbg!(0b1101);

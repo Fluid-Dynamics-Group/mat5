@@ -25,7 +25,6 @@ macro_rules! make_array_values {
 }
 
 fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
-    dbg!(bytes);
     let len : usize= 116;
     let (rest, header) = bytes::take(len)(bytes)?;
     let (rest, subsys_offset_1) = bytes::take(4usize)(rest)?;
@@ -38,7 +37,8 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
     // in the array
     let (rest, array_flag_type) = bytes::take(4usize)(rest)?;
     let (rest, array_flag_length) = bytes::take(4usize)(rest)?;
-    let (rest, arr_flag) = bytes::take(8usize)(rest)?;
+    let (rest, arr_flag_1) = bytes::take(4usize)(rest)?;
+    let (rest, arr_flag_2) = bytes::take(4usize)(rest)?;
 
     // start dimensions
     let (rest, dimension_type) = bytes::take(4usize)(rest)?;
@@ -76,9 +76,15 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
     make_array_values!(u32, 4, array_flag_length, array_flag_length_);
     dbg!(array_flag_length_);
 
-    dbg!(arr_flag);
-    make_array_values!(u64, 8, arr_flag, arr_flag);
-    println!("array flags: {:064b}", arr_flag);
+    //dbg!(arr_flag);
+    make_array_values!(u32, 4, arr_flag_1, arr_flag_1);
+    make_array_values!(u32, 4, arr_flag_2, arr_flag_2);
+    println!("array flags 1: {:032b}", arr_flag_1);
+    println!("array flags 2: {:032b}", arr_flag_2);
+
+    make_array_values!(u32, 4, dimension_type, dimension_type);
+    make_array_values!(u32, 4, dimension_length, dimension_length);
+    dbg!(dimension_type, dimension_length);
 
     //Ok(((), ()));
     Ok((&[], ()))

@@ -84,24 +84,23 @@ where
         //
         // array flags
         //
-        writer.write_all(&i32::matlab_id().le_bytes())?;
+        writer.write_all(&u32::matlab_id().le_bytes())?;
         writer.write_all(&8u32.le_bytes())?;
         // then  the actual flags
         // zeros with the complex / global / logical values set
         let matrix_class = T::matrix_id() as u64;
         // set the global bit
         let flag_options : u16 = 0b100000;
-        let flags : u64 = (flag_options as u64) << (2*8);
+        let flags : u32= (flag_options as u32) << (2*8);
         println!("flags with only first shift:\n{:b}", flags);
-        let flags = flags ^ (matrix_class as u64) << (3 * 8);
+        let flags = flags ^ (matrix_class as u32) << (3 * 8);
         println!("flags with both shift:\n{:b}", flags);
 
-        //let flags : u64 = (flag_options as u64) << (5*8);
-        //println!("flags with only first shift:\n{:b}", flags);
-        //let flags = flags ^ (matrix_class as u64) << (4 * 8);
-        //println!("flags with both shift:\n{:b}", flags);
-
         writer.write_all(&flags.le_bytes())?;
+        writer.write_all(&0u32.le_bytes())?;
+
+        //writer.write_all(&0b11100110001000000011011001100010u32.le_bytes())?;
+        //writer.write_all(&0b01000000100011001101001010000000u32.le_bytes())?;
 
         println!("matrix class: {:b}", matrix_class);
         dbg!(matrix_class);
