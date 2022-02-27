@@ -9,10 +9,11 @@ use darling::{ast, FromDeriveInput, FromField};
 #[darling(supports(struct_any))]
 struct InputReceiver {
     /// The struct ident.
-    // allow dead code here because this function because this field
-    // is definitely used
-    #[allow(dead_code)] 
+    #[allow(dead_code)]
     ident: syn::Ident,
+
+    #[allow(dead_code)]
+    generics: syn::Generics,
 
     /// Receives the body of the struct or enum. We don't care about
     /// struct fields because we previously told darling we only accept structs.
@@ -54,7 +55,7 @@ fn create_trait_function_body(input: Vec<(syn::Ident, syn::Type)>) -> proc_macro
 }
 
 
-pub(crate) fn derive(input: syn::DeriveInput) -> Result<TokenStream> {
+pub fn derive(input: syn::DeriveInput) -> Result<TokenStream> {
     let receiver = InputReceiver::from_derive_input(&input).unwrap();
 
     let fields_information = match receiver.data {
@@ -80,9 +81,10 @@ pub(crate) fn derive(input: syn::DeriveInput) -> Result<TokenStream> {
 
     let function_body = create_trait_function_body(fields_information);
     let target_type = input.ident;
+    let (imp, ty, wher) = input.generics.split_for_impl();
 
     let trait_impl = quote!(
-        impl mat5::MatFile for #target_type {
+        impl #imp mat5::MatFile for #target_type #ty #wher {
             fn write_contents<W: std::io::Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
                 #function_body
             }

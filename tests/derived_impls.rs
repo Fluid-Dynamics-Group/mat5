@@ -36,3 +36,18 @@ fn derived_vector() {
     let check_file = check_file_creator(runner, &["a"]);
     generic_test_runner(runner, &check_file, item);
 }
+
+#[derive(mat5::MatFile)]
+struct Slice<'a> {
+    a: &'a [u8],
+}
+
+#[test]
+fn derived_slice() {
+    let runner = "derived_slice";
+    let vec = vec![1, 2, 3, 4];
+    let item = Slice { a: vec.as_slice() };
+
+    let check_file = check_file_creator(runner, &["a"]);
+    generic_test_runner(runner, &check_file, item);
+}

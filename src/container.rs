@@ -14,7 +14,22 @@ where
         writer: W,
         container_name: &'static str,
     ) -> Result<(), Error> {
-        let view = ndarray::ArrayView1::from_shape(self.len(), self.as_slice()).unwrap();
+        self.as_slice().write_container(writer, container_name)?;
+
+        Ok(())
+    }
+}
+
+impl<T, const BYTES: usize> Container<T> for &[T]
+where
+    T: Num<LeBytes = [u8; BYTES]>,
+{
+    fn write_container<W: Write>(
+        &self,
+        writer: W,
+        container_name: &'static str,
+    ) -> Result<(), Error> {
+        let view = ndarray::ArrayView1::from_shape(self.len(), self).unwrap();
 
         view.write_container(writer, container_name)?;
 
