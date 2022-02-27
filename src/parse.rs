@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::prelude::*;
 use flate2::read::ZlibDecoder;
 use nom::bytes::complete as bytes;
@@ -76,6 +78,7 @@ struct Header<'a> {
     sys_offset_1_bytes: &'a [u8],
     sys_offset_2_bytes: &'a [u8],
     endian_marker: String,
+    version: u16,
 }
 
 fn read_header_information(bytes: &[u8]) -> IResult<&[u8], Header> {
@@ -87,19 +90,20 @@ fn read_header_information(bytes: &[u8]) -> IResult<&[u8], Header> {
 
     make_array_values!(u32, 4, sys_offset_1_bytes, sys_offset_1);
     make_array_values!(u32, 4, sys_offset_2_bytes, sys_offset_2);
-    make_array_values!(u16, 2, version, ver_);
+    make_array_values!(u16, 2, version, version);
 
     let endian = String::from_utf8(endian.to_vec()).unwrap();
 
     let header_string = String::from_utf8(header.to_vec()).unwrap();
 
     let header = Header {
-        header_string: header_string.to_string(),
+        header_string,
         sys_offset_1,
         sys_offset_2,
         sys_offset_1_bytes,
         sys_offset_2_bytes,
-        endian_marker: endian.to_string(),
+        endian_marker: endian,
+        version,
     };
 
     Ok((rest, header))

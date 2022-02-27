@@ -7,7 +7,7 @@ pub(crate) fn write_array_name<W: Write>(mut writer: W, array_name: &str) -> Res
     let bytes_u32: u32 = num_bytes as u32;
     writer.write_all(&bytes_u32.le_bytes())?;
 
-    writer.write_all(&array_name.as_bytes())?;
+    writer.write_all(array_name.as_bytes())?;
     fill_byte_padding(writer, num_bytes)?;
 
     Ok(())
