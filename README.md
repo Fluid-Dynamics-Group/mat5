@@ -45,7 +45,7 @@ struct Foo {
 // create a two dimensional array
 let a = ndarray::arr2(
 	&[[1, 2, 3],
-	  [4,5,6]]
+	  [4, 5, 6]]
 );
 
 // create a one dimensional array
@@ -69,7 +69,7 @@ b
 
 which outputs:
 
-```
+```matlab
 a =
 
   1  2  3

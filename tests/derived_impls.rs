@@ -20,3 +20,19 @@ fn derived_proc_macro() {
     let check_file = check_file_creator(runner, &["a", "b", "c"]);
     generic_test_runner(runner, &check_file, item);
 }
+
+#[derive(mat5::MatFile)]
+struct Vector {
+    a: Vec<f64>,
+}
+
+#[test]
+fn derived_vector() {
+    let runner = "derived_vector";
+    let item = Vector {
+        a: vec![1., 2., 3., 4.],
+    };
+
+    let check_file = check_file_creator(runner, &["a"]);
+    generic_test_runner(runner, &check_file, item);
+}

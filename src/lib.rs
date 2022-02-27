@@ -24,8 +24,6 @@ use prelude::*;
 pub enum Error {
     #[error("An io error occured in the operation: `{0}`")]
     Io(#[from] io::Error),
-    #[error("A container name was not specified for the matrix / n-dimensional array")]
-    MissingContainerName,
 }
 
 /// Orchestrates writing the general structure and individual containers for a given `.mat` file
@@ -41,7 +39,7 @@ pub trait Container<T> {
     fn write_container<W: Write>(
         &self,
         writer: W,
-        container_name: Option<&'static str>,
+        container_name: &'static str,
     ) -> Result<(), Error>;
 }
 

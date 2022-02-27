@@ -11,25 +11,12 @@ where
 {
     fn write_container<W: Write>(
         &self,
-        mut writer: W,
-        _container_name: Option<&'static str>,
+        writer: W,
+        container_name: &'static str,
     ) -> Result<(), Error> {
-        let size = std::mem::size_of::<T>();
-        let len = self.len();
+        let view = ndarray::ArrayView1::from_shape(self.len(), self.as_slice()).unwrap();
 
-        let matlab_id = T::matlab_id();
-        writer.write_all(&matlab_id.le_bytes())?;
-
-        let byte_length = size * len;
-        let byte_length_u32 = byte_length as u32;
-        writer.write_all(&byte_length_u32.le_bytes())?;
-
-        // then write the data
-        self.iter()
-            .try_for_each(|x| writer.write_all(&x.le_bytes()))?;
-
-        // pad the rest of the data
-        fill_byte_padding(&mut writer, byte_length)?;
+        view.write_container(writer, container_name)?;
 
         Ok(())
     }
@@ -45,7 +32,7 @@ where
     fn write_container<W: Write>(
         &self,
         writer: W,
-        container_name: Option<&'static str>,
+        container_name: &'static str,
     ) -> Result<(), Error> {
         self.view().write_container(writer, container_name)?;
         Ok(())
@@ -61,10 +48,8 @@ where
     fn write_container<W: Write>(
         &self,
         mut writer: W,
-        container_name: Option<&'static str>,
+        container_name: &'static str,
     ) -> Result<(), Error> {
-        let container_name = container_name.ok_or(Error::MissingContainerName)?;
-
         //
         // write the matarix header
         //
@@ -123,7 +108,7 @@ fn container_serialization_arr2_u64() {
 
     array
         .view()
-        .write_container(&mut buffer, Some("my_array"))
+        .write_container(&mut buffer, "my_array")
         .unwrap();
 
     assert_eq!(expected_len, buffer.len());
@@ -142,7 +127,7 @@ fn container_serialization_arr2_f32() {
 
     array
         .view()
-        .write_container(&mut buffer, Some("my_array"))
+        .write_container(&mut buffer, "my_array")
         .unwrap();
 
     assert_eq!(expected_len, buffer.len());

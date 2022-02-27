@@ -42,7 +42,7 @@ fn create_trait_function_body(input: Vec<(syn::Ident, syn::Type)>) -> proc_macro
 
         out = quote!(
             #out
-            mat5::Container::write_container(&self.#field_name, &mut writer, Some(#lit))?;
+            mat5::Container::write_container(&self.#field_name, &mut writer, #lit)?;
         );
         
     }

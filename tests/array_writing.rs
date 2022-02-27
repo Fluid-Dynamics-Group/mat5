@@ -17,7 +17,7 @@ impl MatFile for PaddingName {
         mat5::write_default_header(&mut writer)?;
         self.inner
             .view()
-            .write_container(&mut writer, Some("a12345678"))?;
+            .write_container(&mut writer, "a12345678")?;
         Ok(())
     }
 }
@@ -62,9 +62,7 @@ struct PaddingArray {
 impl MatFile for PaddingArray {
     fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
         mat5::write_default_header(&mut writer)?;
-        self.inner
-            .view()
-            .write_container(&mut writer, Some("a1234567"))?;
+        self.inner.view().write_container(&mut writer, "a1234567")?;
         Ok(())
     }
 }
@@ -90,9 +88,7 @@ struct PadDimensions {
 impl MatFile for PadDimensions {
     fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
         mat5::write_default_header(&mut writer)?;
-        self.inner
-            .view()
-            .write_container(&mut writer, Some("a1234567"))?;
+        self.inner.view().write_container(&mut writer, "a1234567")?;
         Ok(())
     }
 }
@@ -143,9 +139,7 @@ where
     fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
         mat5::write_default_header(&mut writer)?;
 
-        self.inner
-            .view()
-            .write_container(&mut writer, Some("a1234567"))?;
+        self.inner.view().write_container(&mut writer, "a1234567")?;
         Ok(())
     }
 }
@@ -217,9 +211,7 @@ struct OctaveMirrorDebug {
 impl MatFile for OctaveMirrorDebug {
     fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
         mat5::write_default_header(&mut writer)?;
-        self.inner
-            .view()
-            .write_container(&mut writer, Some("mat"))?;
+        self.inner.view().write_container(&mut writer, "mat")?;
 
         Ok(())
     }
@@ -246,12 +238,8 @@ struct MultiArrayCheck {
 impl MatFile for MultiArrayCheck {
     fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
         mat5::write_default_header(&mut writer)?;
-        self.inner1
-            .view()
-            .write_container(&mut writer, Some("mat1"))?;
-        self.inner2
-            .view()
-            .write_container(&mut writer, Some("mat2"))?;
+        self.inner1.view().write_container(&mut writer, "mat1")?;
+        self.inner2.view().write_container(&mut writer, "mat2")?;
 
         Ok(())
     }
