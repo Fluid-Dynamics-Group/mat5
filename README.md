@@ -82,3 +82,16 @@ b =
    12.000
    13.500
 ```
+
+The following code was automatically generated:
+
+```rust,ignore
+impl mat5::MatFile for Foo {
+    fn write_contents<W: std::io::Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
+        mat5::write_default_header(&mut writer)?;
+        mat5::Container::write_container(&self.a, &mut writer, "a")?;
+        mat5::Container::write_container(&self.b, &mut writer, "b")?;
+        Ok(())
+    }
+}
+```

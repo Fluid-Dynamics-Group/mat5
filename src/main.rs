@@ -1,9 +1,10 @@
+use ndarray::Array1;
+use ndarray::Array2;
+
 #[derive(mat5::MatFile)]
-struct PaddingName {
-    inner: ndarray::Array2<u32>,
-    inner2: ndarray::Array3<u32>,
-    inner3: ndarray::Array4<u32>,
-    inner4: ndarray::Array1<u32>,
+struct Foo {
+    a: Array2<u64>,
+    b: Array1<f32>,
 }
 
 fn main() {
