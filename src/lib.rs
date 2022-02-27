@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 mod byte_count;
 mod container;
 mod num;
@@ -6,9 +8,14 @@ mod prelude;
 mod utils;
 mod write_matrix;
 
+/// Automatically generate an implementation of `mat5::MatFile` for your struct
 pub use derive::MatFile;
+
+#[doc(hidden)]
 pub use parse::parse_file;
+#[doc(hidden)]
 pub use utils::fill_byte_padding;
+
 pub use utils::write_default_header;
 
 use prelude::*;
@@ -21,12 +28,15 @@ pub enum Error {
     MissingContainerName,
 }
 
-/// handles how to write the individual fields
+/// Orchestrates writing the general structure and individual containers for a given `.mat` file
 pub trait MatFile {
     fn write_contents<W: Write>(&self, writer: W) -> Result<(), Error>;
 }
 
-/// handles writing container types to files, including vectors and matricies
+/// describes how a container type (vector or matrix) should be serialized to bytes in a `.mat`
+/// file
+///
+/// You probably should not implement this yourself
 pub trait Container<T> {
     fn write_container<W: Write>(
         &self,
@@ -37,6 +47,8 @@ pub trait Container<T> {
 
 /// Describes numeric types and thier associated matlab
 /// identifier constants that can be written to files
+///
+/// You should not implement this yourself
 pub trait Num {
     type LeBytes;
 

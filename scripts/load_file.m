@@ -1,3 +1,5 @@
-load('../tests/pad_dimensions.mat')
+load("./tests/my_file.mat")
 
-a1234567
+% print the contents of each of the files
+a
+b
