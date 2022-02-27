@@ -6,6 +6,7 @@ mod prelude;
 mod utils;
 mod write_matrix;
 
+pub use derive::MatFile;
 pub use parse::parse_file;
 pub use utils::fill_byte_padding;
 pub use utils::write_default_header;
@@ -57,12 +58,45 @@ pub trait WriteMatrix {
     fn write_matrix<W: Write>(&self, writer: W) -> Result<(), io::Error>;
 }
 
-// verify that our trait system works
-#[allow(dead_code)]
-fn check() {
-    fn inner<T: Container<V>, V: Num>(_: T) {}
+#[doc(hidden)]
+pub fn generic_test_runner<T: MatFile>(run_name: &str, check_file_contents: &str, contents: T) {
+    let filename = format!("./tests/{run_name}.mat");
+    let checker_file = format!("./tests/{run_name}.m");
 
-    let data = vec![1u32];
+    let binary_writer = std::fs::File::create(&filename).expect("could not create binary mat file");
+    contents.write_contents(binary_writer).unwrap();
 
-    inner(data)
+    std::fs::write(&checker_file, check_file_contents).expect("could not write octave runner file");
+
+    let mut command = std::process::Command::new("octave");
+    command.arg(&checker_file);
+    dbg!(&command);
+
+    let out = command.output().unwrap();
+
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+
+    println!("STDOUT:\n{stdout}\nSTDERR:\n{stderr}");
+
+    if stderr.len() > 0 {
+        panic!("stderr was present");
+    }
+
+    std::fs::remove_file(filename).unwrap();
+    std::fs::remove_file(checker_file).unwrap();
+}
+
+#[doc(hidden)]
+pub fn check_file_creator(run_name: &str, results_to_load: &[&str]) -> String {
+    let filename = format!("./tests/{run_name}.mat");
+
+    let mut out = format!(r#"load("{filename}")"#);
+
+    for result in results_to_load {
+        out.push_str("\n");
+        out.push_str(result);
+    }
+
+    out
 }

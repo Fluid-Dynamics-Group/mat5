@@ -1,3 +1,5 @@
+use mat5::check_file_creator;
+use mat5::generic_test_runner;
 use mat5::Container;
 use mat5::MatFile;
 use mat5::Num;
@@ -40,44 +42,6 @@ fn create_octave_runner(mat_file_name: &str, array_name: &str, load_array: bool)
     }
 }
 
-#[cfg(test)]
-fn generic_test_runner<T: MatFile>(
-    run_name: &str,
-    array_name: &str,
-    contents: T,
-    load_array: bool,
-) {
-    let filename = format!("./tests/{run_name}.mat");
-    let checker_file = format!("./tests/{run_name}.m");
-
-    let binary_writer = std::fs::File::create(&filename).expect("could not create binary mat file");
-    contents.write_contents(binary_writer).unwrap();
-
-    std::fs::write(
-        &checker_file,
-        create_octave_runner(&filename, array_name, load_array),
-    )
-    .expect("could not write octave runner file");
-
-    let mut command = std::process::Command::new("octave");
-    command.arg(&checker_file);
-    dbg!(&command);
-
-    let out = command.output().unwrap();
-
-    let stdout = String::from_utf8_lossy(&out.stdout);
-    let stderr = String::from_utf8_lossy(&out.stderr);
-
-    println!("STDOUT:\n{stdout}\nSTDERR:\n{stderr}");
-
-    if stderr.len() > 0 {
-        panic!("stderr was present");
-    }
-
-    //std::fs::remove_file(filename).unwrap();
-    //std::fs::remove_file(checker_file).unwrap();
-}
-
 #[test]
 fn name_requires_padding() {
     let run = "requires_padding";
@@ -87,7 +51,8 @@ fn name_requires_padding() {
         inner: Array2::from_shape_vec((2, 2), vec![1, 2, 3, 4]).unwrap(),
     };
 
-    generic_test_runner(run, "a12345678", padding, true);
+    let check_file = check_file_creator(run, &["a12345678"]);
+    generic_test_runner(run, &check_file, padding);
 }
 
 struct PaddingArray {
@@ -114,7 +79,8 @@ fn array_bytes_require_padding() {
         inner: Array2::from_shape_vec((2, 2), vec![1, 2, 3, 4]).unwrap(),
     };
 
-    generic_test_runner(run, "a1234567", padding, true);
+    let check_file = check_file_creator(run, &["a1234567"]);
+    generic_test_runner(run, &check_file, padding);
 }
 
 struct PadDimensions {
@@ -141,7 +107,8 @@ fn dimensions_require_padding() {
         inner: Array1::from_shape_vec(2, vec![1, 2]).unwrap(),
     };
 
-    generic_test_runner(run, "a1234567", padding, true);
+    let check_file = check_file_creator(run, &["a1234567"]);
+    generic_test_runner(run, &check_file, padding);
 }
 
 struct OneItem<T> {
@@ -192,7 +159,9 @@ macro_rules! make_type_test {
             fn $test_name() {
                 let run = stringify!($test_name);
                 let item = OneItem::<$type>::new();
-                generic_test_runner(run, "a1234567", item, true);
+
+                let check_file = check_file_creator(run, &["a1234567"]);
+                generic_test_runner(run, &check_file, item);
             }
         )+
 
@@ -236,7 +205,9 @@ impl MatFile for EmptyFile {
 fn empty_file() {
     let run = "empty_file";
     let item = EmptyFile;
-    generic_test_runner(run, "a1234567", item, false);
+
+    let check_file = check_file_creator(run, &[]);
+    generic_test_runner(run, &check_file, item);
 }
 
 struct OctaveMirrorDebug {
@@ -262,7 +233,9 @@ fn two_by_two_mirror_octave_test() {
         inner: ndarray::arr2(&[[1., 2.], [3., 4.]]),
     };
     dbg!(&item.inner);
-    generic_test_runner(run, "mat", item, false);
+
+    let check_file = check_file_creator(run, &["mat"]);
+    generic_test_runner(run, &check_file, item);
 }
 
 struct MultiArrayCheck {
@@ -291,5 +264,6 @@ fn multi_array_per_file() {
         inner1: ndarray::arr2(&[[1., 2.], [3., 4.]]),
         inner2: ndarray::arr2(&[[1., 2.], [3., 4.]]),
     };
-    generic_test_runner(run, "mat", item, false);
+    let check_file = check_file_creator(run, &["mat1", "mat2"]);
+    generic_test_runner(run, &check_file, item);
 }
