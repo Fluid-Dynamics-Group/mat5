@@ -67,14 +67,19 @@ mod tests {
     // 128 bytes is pulled from figure 1-7 in the specification. Since
     // we are not writing complex data, we remove the last 5 rows
     // of bytes from the overal value (5*8)
-    fn array_number_bytes() {
-        let mut array = ndarray::Array2::<u64>::zeros((2, 2));
-        array[[0, 0]] = 1;
-        array[[0, 1]] = 2;
-        array[[1, 0]] = 3;
-        array[[1, 1]] = 4;
+    fn array_number_bytes_u64() {
+        let array = ndarray::Array2::<u64>::zeros((2, 2));
 
         let array_bytes = 128 - (8 * 5);
+        crate::ByteCount::byte_count(&array.view(), "my_array", 2);
+        assert_eq!(array_bytes, array.view().byte_count("my_array", 2));
+    }
+
+    #[test]
+    fn array_number_bytes_u32() {
+        let array = ndarray::Array2::<u32>::zeros((2, 2));
+
+        let array_bytes = 9 * 8;
         crate::ByteCount::byte_count(&array.view(), "my_array", 2);
         assert_eq!(array_bytes, array.view().byte_count("my_array", 2));
     }

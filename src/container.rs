@@ -4,7 +4,6 @@ use utils::write_array_name;
 use utils::write_matrix_dimensions;
 
 const MATRIX_MATLAB_ID: u32 = 14;
-const U32_MATLAB_ID: u32 = 6;
 
 impl<T, const BYTES: usize> Container<T> for Vec<T>
 where
@@ -68,9 +67,6 @@ where
     ) -> Result<(), Error> {
         let container_name = container_name.ok_or(Error::MissingContainerName)?;
 
-        let size = std::mem::size_of::<T>();
-        let len = self.len();
-
         //
         // write the matarix header
         //
@@ -86,24 +82,10 @@ where
         //
         writer.write_all(&u32::matlab_id().le_bytes())?;
         writer.write_all(&8u32.le_bytes())?;
-        // then  the actual flags
-        // zeros with the complex / global / logical values set
-        let matrix_class = T::matrix_id() as u64;
-        // set the global bit
-        let flag_options : u16 = 0b100000;
-        let flags : u32= (flag_options as u32) << (2*8);
-        println!("flags with only first shift:\n{:b}", flags);
-        let flags = flags ^ (matrix_class as u32) << (3 * 8);
-        println!("flags with both shift:\n{:b}", flags);
 
-        writer.write_all(&flags.le_bytes())?;
+        let flag_1= utils::create_flag_1(T::matrix_id(), false, false, false);
+        writer.write_all(&flag_1.le_bytes())?;
         writer.write_all(&0u32.le_bytes())?;
-
-        //writer.write_all(&0b11100110001000000011011001100010u32.le_bytes())?;
-        //writer.write_all(&0b01000000100011001101001010000000u32.le_bytes())?;
-
-        println!("matrix class: {:b}", matrix_class);
-        dbg!(matrix_class);
 
         //
         // array dimensions
@@ -123,11 +105,12 @@ where
         // Array data (assume non-complex data)
         //
         // header
-        let num_matrix_bytes = len * size;
-        writer.write_all(&T::matlab_id().le_bytes())?;
+        let num_matrix_bytes = self.len() * std::mem::size_of::<T>();
+        writer.write_all(&dbg!(T::matlab_id()).le_bytes())?;
         writer.write_all(&(num_matrix_bytes as u32).le_bytes())?;
         // write the actual data
         self.write_matrix(&mut writer)?;
+        println!("padding matrix bytes");
         fill_byte_padding(writer, num_matrix_bytes)?;
 
         Ok(())
@@ -135,12 +118,8 @@ where
 }
 
 #[test]
-fn container_serialization_arr2() {
-    let mut array = ndarray::Array2::<u64>::zeros((2, 2));
-    array[[0, 0]] = 1;
-    array[[0, 1]] = 2;
-    array[[1, 0]] = 3;
-    array[[1, 1]] = 4;
+fn container_serialization_arr2_u64() {
+    let array = ndarray::Array2::<u64>::zeros((2, 2));
 
     println!("{}", array);
 
@@ -149,6 +128,25 @@ fn container_serialization_arr2() {
     //
     // since we are not writing complex data, skip the last 5 rows (8 bytes each)
     let expected_len = 128 + 8 - (5 * 8);
+
+    let mut buffer = Vec::new();
+
+    array
+        .view()
+        .write_container(&mut buffer, Some("my_array"))
+        .unwrap();
+
+    assert_eq!(expected_len, buffer.len());
+}
+
+#[test]
+fn container_serialization_arr2_f32() {
+    let array = ndarray::Array2::<f32>::zeros((2, 2));
+
+    println!("{}", array);
+
+    // comes from figure 1-7, adapted for 32 bit matrix data
+    let expected_len = 10 * 8;
 
     let mut buffer = Vec::new();
 

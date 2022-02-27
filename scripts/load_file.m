@@ -1,3 +1,3 @@
-load('test_file.mat')
+load('../tests/pad_dimensions.mat')
 
-my_array
+a1234567

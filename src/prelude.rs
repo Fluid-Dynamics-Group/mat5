@@ -7,4 +7,3 @@ pub(crate) use crate::WriteMatrix;
 pub(crate) use std::io;
 pub(crate) use std::io::Write;
 pub(crate) use std::path::Path;
-

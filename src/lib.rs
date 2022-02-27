@@ -1,14 +1,14 @@
 mod byte_count;
 mod container;
 mod num;
+mod parse;
 mod prelude;
 mod utils;
 mod write_matrix;
-mod parse;
 
+pub use parse::parse_file;
 pub use utils::fill_byte_padding;
 pub use utils::write_default_header;
-pub use parse::parse_file;
 
 use prelude::*;
 
