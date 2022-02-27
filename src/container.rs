@@ -20,8 +20,6 @@ where
         let matlab_id = T::matlab_id();
         writer.write_all(&matlab_id.le_bytes())?;
 
-        dbg!(std::mem::size_of_val(&matlab_id) + std::mem::size_of_val(&matlab_id.le_bytes()));
-
         let byte_length = size * len;
         let byte_length_u32 = byte_length as u32;
         writer.write_all(&byte_length_u32.le_bytes())?;
@@ -72,10 +70,7 @@ where
         //
         writer.write_all(&MATRIX_MATLAB_ID.le_bytes())?;
         let total_matrix_length: usize = self.byte_count(container_name, self.ndim());
-        dbg!(total_matrix_length);
         writer.write_all(&(total_matrix_length as u32).le_bytes())?;
-
-        println!("finish matrix header");
 
         //
         // array flags
@@ -83,7 +78,7 @@ where
         writer.write_all(&u32::matlab_id().le_bytes())?;
         writer.write_all(&8u32.le_bytes())?;
 
-        let flag_1= utils::create_flag_1(T::matrix_id(), false, false, false);
+        let flag_1 = utils::create_flag_1(T::matrix_id(), false, false, false);
         writer.write_all(&flag_1.le_bytes())?;
         writer.write_all(&0u32.le_bytes())?;
 
@@ -92,25 +87,20 @@ where
         //
         write_matrix_dimensions(&mut writer, self.shape())?;
 
-        println!("finish matrix dimensions");
-
         //
         // Array name
         //
         write_array_name(&mut writer, container_name)?;
-
-        println!("finish array name");
 
         //
         // Array data (assume non-complex data)
         //
         // header
         let num_matrix_bytes = self.len() * std::mem::size_of::<T>();
-        writer.write_all(&dbg!(T::matlab_id()).le_bytes())?;
+        writer.write_all(&T::matlab_id().le_bytes())?;
         writer.write_all(&(num_matrix_bytes as u32).le_bytes())?;
         // write the actual data
         self.write_matrix(&mut writer)?;
-        println!("padding matrix bytes");
         fill_byte_padding(writer, num_matrix_bytes)?;
 
         Ok(())

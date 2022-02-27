@@ -239,7 +239,6 @@ fn empty_file() {
     generic_test_runner(run, "a1234567", item, false);
 }
 
-
 struct OctaveMirrorDebug {
     inner: Array2<f64>,
 }
@@ -256,9 +255,41 @@ impl MatFile for OctaveMirrorDebug {
 }
 
 #[test]
+// used for debugging against matlab / octave files
 fn two_by_two_mirror_octave_test() {
     let run = "2x2_octave_mirror";
-    let item = OctaveMirrorDebug { inner : ndarray::arr2(&[[1. ,2.], [3., 4.]]) };
+    let item = OctaveMirrorDebug {
+        inner: ndarray::arr2(&[[1., 2.], [3., 4.]]),
+    };
     dbg!(&item.inner);
+    generic_test_runner(run, "mat", item, false);
+}
+
+struct MultiArrayCheck {
+    inner1: Array2<f64>,
+    inner2: Array2<f64>,
+}
+
+impl MatFile for MultiArrayCheck {
+    fn write_contents<W: Write>(&self, mut writer: W) -> Result<(), mat5::Error> {
+        mat5::write_default_header(&mut writer)?;
+        self.inner1
+            .view()
+            .write_container(&mut writer, Some("mat1"))?;
+        self.inner2
+            .view()
+            .write_container(&mut writer, Some("mat2"))?;
+
+        Ok(())
+    }
+}
+
+#[test]
+fn multi_array_per_file() {
+    let run = "multi_array_file";
+    let item = MultiArrayCheck {
+        inner1: ndarray::arr2(&[[1., 2.], [3., 4.]]),
+        inner2: ndarray::arr2(&[[1., 2.], [3., 4.]]),
+    };
     generic_test_runner(run, "mat", item, false);
 }

@@ -1,7 +1,7 @@
 use crate::prelude::*;
+use flate2::read::ZlibDecoder;
 use nom::bytes::complete as bytes;
 use nom::IResult;
-use flate2::read::ZlibDecoder;
 use std::io::Read;
 
 pub fn parse_file(path: &Path) -> Result<(), Error> {
@@ -27,7 +27,6 @@ macro_rules! make_array_values {
 }
 
 fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
-
     let initial_byte_len = bytes.len();
     let (rest, header) = read_header_information(bytes)?;
     let read_bytes_header = initial_byte_len - rest.len();
@@ -37,7 +36,7 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
     dbg!(&data_type_initial);
 
     // check for compressed data
-    let mut decode_bytes : Vec<u8> = Vec::new();
+    let mut decode_bytes: Vec<u8> = Vec::new();
     if data_type_initial.dtype_integer == 15 {
         println!("data is compressed by zlib - decompressing");
         let mut z = ZlibDecoder::new(rest);
@@ -65,7 +64,6 @@ fn inner(bytes: &[u8]) -> nom::IResult<&[u8], ()> {
     dbg!(&data);
 
     dbg!(rest);
-
 
     Ok((&[], ()))
 }
@@ -101,18 +99,18 @@ fn read_header_information(bytes: &[u8]) -> IResult<&[u8], Header> {
         sys_offset_2,
         sys_offset_1_bytes,
         sys_offset_2_bytes,
-        endian_marker: endian.to_string()
+        endian_marker: endian.to_string(),
     };
 
     Ok((rest, header))
 }
 
 #[derive(Debug)]
-struct DataType <'a> {
+struct DataType<'a> {
     dtype_integer: u32,
     dtype_bytes: &'a [u8],
     dtype_length: u32,
-    dtype_length_bytes: &'a [u8]
+    dtype_length_bytes: &'a [u8],
 }
 
 fn read_overall_datatype_header(bytes: &[u8]) -> IResult<&[u8], DataType> {
@@ -131,12 +129,11 @@ fn read_overall_datatype_header(bytes: &[u8]) -> IResult<&[u8], DataType> {
         dtype_integer: data_type_1,
         dtype_bytes: data_type_1_bytes,
         dtype_length: data_length_1,
-        dtype_length_bytes:data_length_1_bytes 
+        dtype_length_bytes: data_length_1_bytes,
     };
-    
+
     Ok((rest, dtype))
 }
-
 
 #[derive(Debug)]
 struct ArrayFlags<'a> {
@@ -147,11 +144,10 @@ struct ArrayFlags<'a> {
     flag_1: u32,
     flag_1_bytes: &'a [u8],
     flag_2: u32,
-    flag_2_bytes: &'a [u8]
+    flag_2_bytes: &'a [u8],
 }
 
-fn read_array_flags (bytes: &[u8]) -> IResult<&[u8], ArrayFlags> {
-
+fn read_array_flags(bytes: &[u8]) -> IResult<&[u8], ArrayFlags> {
     let (rest, array_flag_type_bytes) = bytes::take(4usize)(bytes)?;
     let (rest, array_flag_length_bytes) = bytes::take(4usize)(rest)?;
     let (rest, flag_1_bytes) = bytes::take(4usize)(rest)?;
@@ -159,8 +155,8 @@ fn read_array_flags (bytes: &[u8]) -> IResult<&[u8], ArrayFlags> {
 
     make_array_values!(u32, 4, array_flag_type_bytes, array_flag_type);
     make_array_values!(u32, 4, array_flag_length_bytes, array_flag_length);
-    make_array_values!(u32, 4, flag_1_bytes, flag_1 );
-    make_array_values!(u32, 4, flag_2_bytes, flag_2 );
+    make_array_values!(u32, 4, flag_1_bytes, flag_1);
+    make_array_values!(u32, 4, flag_2_bytes, flag_2);
 
     let flags = ArrayFlags {
         array_flag_type,
@@ -184,7 +180,7 @@ struct Dimensions<'a> {
     dimension_length_bytes: &'a [u8],
     dimension_sizes: Vec<i32>,
     dimension_sizes_bytes: &'a [u8],
-    padding_bytes: usize
+    padding_bytes: usize,
 }
 
 fn read_dimensions(bytes: &[u8]) -> IResult<&[u8], Dimensions> {
@@ -194,15 +190,14 @@ fn read_dimensions(bytes: &[u8]) -> IResult<&[u8], Dimensions> {
     make_array_values!(u32, 4, dimension_type_bytes, dimension_type);
     make_array_values!(u32, 4, dimension_length_bytes, dimension_length);
 
-
     let (rest, dimension_sizes_bytes) = bytes::take(dimension_length as usize)(rest)?;
 
-    let mut dimension_sizes : Vec<i32> = Vec::new();
+    let mut dimension_sizes: Vec<i32> = Vec::new();
 
-    for i in 0..(dimension_length/4) {
-        let slicer : usize = (i*4) as usize;
+    for i in 0..(dimension_length / 4) {
+        let slicer: usize = (i * 4) as usize;
         println!("reading one dimension (slicer {slicer})");
-        let dim_slice = &dimension_sizes_bytes[slicer..(slicer+4)];
+        let dim_slice = &dimension_sizes_bytes[slicer..(slicer + 4)];
         make_array_values!(i32, 4, dim_slice, dim_n);
         dimension_sizes.push(dim_n);
     }
@@ -213,11 +208,11 @@ fn read_dimensions(bytes: &[u8]) -> IResult<&[u8], Dimensions> {
     let dimension = Dimensions {
         dimension_type,
         dimension_type_bytes,
-        dimension_length, 
+        dimension_length,
         dimension_length_bytes,
         dimension_sizes,
         dimension_sizes_bytes,
-        padding_bytes
+        padding_bytes,
     };
 
     Ok((rest, dimension))
@@ -228,15 +223,13 @@ struct ArrayName<'a> {
     name_type: u32,
     name_type_bytes: &'a [u8],
     name_length: u32,
-    name_length_bytes:&'a [u8],
+    name_length_bytes: &'a [u8],
     name: String,
     name_bytes: &'a [u8],
-    padding_bytes: usize
+    padding_bytes: usize,
 }
 
-
 fn read_array_name(bytes: &[u8]) -> IResult<&[u8], ArrayName> {
-    
     let (rest, name_type_bytes) = bytes::take(4usize)(bytes)?;
     let (rest, name_length_bytes) = bytes::take(4usize)(rest)?;
 
@@ -257,9 +250,9 @@ fn read_array_name(bytes: &[u8]) -> IResult<&[u8], ArrayName> {
         name_length_bytes,
         name,
         name_bytes,
-        padding_bytes
+        padding_bytes,
     };
-    
+
     Ok((rest, names))
 }
 
@@ -284,7 +277,6 @@ fn read_array_data(bytes: &[u8]) -> IResult<&[u8], ArrayData> {
 
     let padding_bytes = utils::padding_bytes_required(array_length as usize);
     let (rest, _padding_bytes) = bytes::take(padding_bytes)(rest)?;
-
 
     let data = ArrayData {
         array_type,

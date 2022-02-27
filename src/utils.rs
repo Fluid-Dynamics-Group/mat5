@@ -8,9 +8,6 @@ pub(crate) fn write_array_name<W: Write>(mut writer: W, array_name: &str) -> Res
     writer.write_all(&bytes_u32.le_bytes())?;
 
     writer.write_all(&array_name.as_bytes())?;
-    dbg!(num_bytes);
-    dbg!(array_name.as_bytes());
-    println!("padding array name string");
     fill_byte_padding(writer, num_bytes)?;
 
     Ok(())
@@ -28,12 +25,9 @@ pub(crate) fn write_matrix_dimensions<W: Write>(
 
     for dim in dimension {
         let dim = *dim as i32;
-        dbg!(dim);
         writer.write_all(&dim.le_bytes())?;
     }
 
-    dbg!(bytes_written);
-    println!("padding matrix dimensions");
     fill_byte_padding(writer, bytes_written)?;
 
     Ok(())
@@ -41,7 +35,6 @@ pub(crate) fn write_matrix_dimensions<W: Write>(
 
 pub fn fill_byte_padding<W: Write>(mut writer: W, total_bytes: usize) -> Result<(), io::Error> {
     let byte_padding_required = padding_bytes_required(total_bytes);
-    dbg!(byte_padding_required);
     for _ in 0..byte_padding_required {
         writer.write_all(&0u8.le_bytes())?;
     }
@@ -79,7 +72,7 @@ pub fn write_text_header<W: Write>(mut writer: W, text: &str) -> Result<(), io::
     Ok(())
 }
 
-/// calculate the number of bytes that should be inserted to make the array 
+/// calculate the number of bytes that should be inserted to make the array
 /// end on a 64 bit boundary
 pub(crate) fn padding_bytes_required(total_bytes: usize) -> usize {
     let bytes_over_ending = total_bytes % 8;
@@ -92,8 +85,16 @@ pub(crate) fn padding_bytes_required(total_bytes: usize) -> usize {
 }
 
 /// create the first array flag through bit shifting
-pub(crate) fn create_flag_1(matrix_class: u8, is_complex: bool, is_logical: bool, is_global: bool) -> u32 {
-    (matrix_class as u32) ^ (is_complex as u32) << (8 + 3) ^ (is_logical as u32) << (8 + 1) ^ (is_global as u32) << (8 + 2)
+pub(crate) fn create_flag_1(
+    matrix_class: u8,
+    is_complex: bool,
+    is_logical: bool,
+    is_global: bool,
+) -> u32 {
+    (matrix_class as u32)
+        ^ (is_complex as u32) << (8 + 3)
+        ^ (is_logical as u32) << (8 + 1)
+        ^ (is_global as u32) << (8 + 2)
 }
 
 #[test]
