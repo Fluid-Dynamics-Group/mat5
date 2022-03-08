@@ -2,9 +2,23 @@ use ndarray::Array1;
 use ndarray::Array2;
 
 #[derive(mat5::MatFile)]
+//#[mat5(deref(name="something"))]
+//#[mat5(deref)]
 struct Foo {
-    a: Array2<u64>,
+    #[mat5(deref)]
+    a: Wrap,
+    //#[mat5(deref)]
     b: Array1<f32>,
+}
+
+struct Wrap(Array2<u64>);
+
+impl std::ops::Deref for Wrap {
+    type Target = Array2<u64>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 
 fn main() {

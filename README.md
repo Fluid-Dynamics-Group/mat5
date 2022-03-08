@@ -95,3 +95,31 @@ impl mat5::MatFile for Foo {
     }
 }
 ```
+
+## Wrapper Types
+
+If your type wraps a type that implements the [`Container`](`crate::Container`) trait,
+you can use the `#[mat5(deref)]` attribute to tell `mat5` to call [`Deref`](`std::ops::Deref`) on the 
+type before serializing it to the file:
+
+```rust
+#[derive(mat5::MatFile)]
+struct Foo {
+    #[mat5(deref)]
+    some_array: WrapArray,
+}
+
+// `WrapArray` is just a proof of concent wrapper 
+// type around a container that implements `Container`
+struct WrapArray(Array2<u64>);
+
+impl std::ops::Deref for Wrap {
+    type Target = Array2<u64>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+```
+
+

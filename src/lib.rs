@@ -104,7 +104,7 @@ pub fn check_file_creator(run_name: &str, results_to_load: &[&str]) -> String {
     let mut out = format!(r#"load("{filename}")"#);
 
     for result in results_to_load {
-        out.push_str("\n");
+        out.push('\n');
         out.push_str(result);
     }
 
