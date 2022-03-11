@@ -51,7 +51,7 @@ fn name_requires_padding() {
         inner: Array2::from_shape_vec((2, 2), vec![1, 2, 3, 4]).unwrap(),
     };
 
-    let check_file = check_file_creator(run, &["a12345678"]);
+    let check_file = check_file_creator(run, &["a12345678"], false);
     generic_test_runner(run, &check_file, padding);
 }
 
@@ -77,7 +77,7 @@ fn array_bytes_require_padding() {
         inner: Array2::from_shape_vec((2, 2), vec![1, 2, 3, 4]).unwrap(),
     };
 
-    let check_file = check_file_creator(run, &["a1234567"]);
+    let check_file = check_file_creator(run, &["a1234567"], false);
     generic_test_runner(run, &check_file, padding);
 }
 
@@ -103,7 +103,7 @@ fn dimensions_require_padding() {
         inner: Array1::from_shape_vec(2, vec![1, 2]).unwrap(),
     };
 
-    let check_file = check_file_creator(run, &["a1234567"]);
+    let check_file = check_file_creator(run, &["a1234567"], false);
     generic_test_runner(run, &check_file, padding);
 }
 
@@ -154,7 +154,7 @@ macro_rules! make_type_test {
                 let run = stringify!($test_name);
                 let item = OneItem::<$type>::new();
 
-                let check_file = check_file_creator(run, &["a1234567"]);
+                let check_file = check_file_creator(run, &["a1234567"], false);
                 generic_test_runner(run, &check_file, item);
             }
         )+
@@ -200,7 +200,7 @@ fn empty_file() {
     let run = "empty_file";
     let item = EmptyFile;
 
-    let check_file = check_file_creator(run, &[]);
+    let check_file = check_file_creator(run, &[], false);
     generic_test_runner(run, &check_file, item);
 }
 
@@ -226,7 +226,7 @@ fn two_by_two_mirror_octave_test() {
     };
     dbg!(&item.inner);
 
-    let check_file = check_file_creator(run, &["mat"]);
+    let check_file = check_file_creator(run, &["mat"], false);
     generic_test_runner(run, &check_file, item);
 }
 
@@ -252,6 +252,6 @@ fn multi_array_per_file() {
         inner1: ndarray::arr2(&[[1., 2.], [3., 4.]]),
         inner2: ndarray::arr2(&[[1., 2.], [3., 4.]]),
     };
-    let check_file = check_file_creator(run, &["mat1", "mat2"]);
+    let check_file = check_file_creator(run, &["mat1", "mat2"], false);
     generic_test_runner(run, &check_file, item);
 }

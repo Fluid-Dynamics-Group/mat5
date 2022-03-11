@@ -111,15 +111,13 @@ struct Foo {
 
 // `WrapArray` is just a proof of concent wrapper 
 // type around a container that implements `Container`
-struct WrapArray(Array2<u64>);
+struct WrapArray(ndarray::Array2<u64>);
 
-impl std::ops::Deref for Wrap {
-    type Target = Array2<u64>;
+impl std::ops::Deref for WrapArray {
+    type Target = ndarray::Array2<u64>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 ```
-
-

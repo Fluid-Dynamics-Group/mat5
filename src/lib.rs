@@ -98,7 +98,7 @@ pub fn generic_test_runner<T: MatFile>(run_name: &str, check_file_contents: &str
 }
 
 #[doc(hidden)]
-pub fn check_file_creator(run_name: &str, results_to_load: &[&str]) -> String {
+pub fn check_file_creator(run_name: &str, results_to_load: &[&str], add_semicolon: bool) -> String {
     let filename = format!("./tests/{run_name}.mat");
 
     let mut out = format!(r#"load("{filename}")"#);
@@ -106,6 +106,10 @@ pub fn check_file_creator(run_name: &str, results_to_load: &[&str]) -> String {
     for result in results_to_load {
         out.push('\n');
         out.push_str(result);
+
+        if add_semicolon {
+            out.push(';');
+        }
     }
 
     out
